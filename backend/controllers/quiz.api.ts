@@ -6,7 +6,7 @@ import { CharacterModel } from '../models/character.model';
 import { MovieModel } from '../models/movie.model';
 import { HttpCode } from '../helpers/constants';
 
-type Category = 'who-said-it' | 'quote-movie' | 'character-trait';
+type Category = 'who-said-it' | 'quote-movie';
 
 interface QuizQuestion {
 	id: string;
@@ -17,31 +17,31 @@ interface QuizQuestion {
 	source: { label: string; wikiUrl?: string };
 }
 
-// 4 / 3 / 3 mix per round, shuffled per request so the order varies.
+// 5/5 mix of quote-based questions per round, shuffled per request.
 const CATEGORY_PLAN: Category[] = [
 	'who-said-it',
 	'who-said-it',
 	'who-said-it',
 	'who-said-it',
+	'who-said-it',
 	'quote-movie',
 	'quote-movie',
 	'quote-movie',
-	'character-trait',
-	'character-trait',
-	'character-trait'
+	'quote-movie',
+	'quote-movie'
 ];
 
-const BLANKS = [null, '', 'NaN'];
+// Below ~25 chars, dialog is mostly proper nouns or stock interjections
+// ("Aragorn!", "DEATH!", "My precious.") that carry no signal about which
+// film or character the line belongs to. Filter them out at the Mongo
+// stage so $sample only sees the corpus of memorable lines.
+const MIN_DIALOG_LEN = 25;
 
-// Some seed fields arrive as the float NaN (CSV → BSON coercion) which JSON
-// stringifies to null and slips through Mongo's $nin string filters. Treat
-// any non-string or sentinel value as invalid before it becomes user-facing.
-function isUsable(v: unknown): v is string {
-	if (typeof v !== 'string') return false;
-	const t = v.trim();
-	if (!t || t === 'NaN') return false;
-	return true;
-}
+// SCREAMING_SNAKE_CASE entries in the characters collection are the
+// scraper's placeholder for unnamed minor characters (e.g. MINOR_CHARACTER,
+// which owns ~117 quotes in the seed). Treat them as nonexistent — no
+// player can guess them and they're useless as distractors.
+const REAL_NAME_REGEX = /^(?![A-Z_]+$).+/;
 
 function shuffle<T>(arr: T[]): T[] {
 	const a = [...arr];
@@ -63,33 +63,33 @@ function cleanDialog(raw: string): string {
 	return (raw || '').replace(/\s\s+/g, ' ').trim();
 }
 
+const memorableDialogMatch = {
+	dialog: { $type: 'string' as const },
+	$expr: { $gte: [{ $strLenCP: '$dialog' }, MIN_DIALOG_LEN] }
+};
+
 async function makeWhoSaidIt(): Promise<QuizQuestion | null> {
 	const quotes: any[] = await QuoteModel.aggregate([
-		{ $match: { character: { $exists: true, $ne: null }, dialog: { $exists: true, $ne: '' } } },
+		{ $match: { character: { $exists: true, $ne: null }, ...memorableDialogMatch } },
 		{ $sample: { size: 1 } },
 		{ $lookup: { from: 'characters', localField: 'character', foreignField: '_id', as: 'character' } },
 		{ $unwind: '$character' },
-		{ $match: { 'character.name': { $exists: true, $ne: '' } } }
+		{ $match: { 'character.name': { $type: 'string', $regex: REAL_NAME_REGEX } } }
 	]);
 	if (!quotes.length) return null;
 	const quote = quotes[0];
 	const correct = quote.character;
-	if (!isUsable(correct.name)) return null;
 
-	// Oversample, then filter in JS so seed-data NaN/null values can't leak.
-	const pool: any[] = await CharacterModel.aggregate([
-		{ $match: { _id: { $ne: correct._id }, name: { $exists: true, $nin: BLANKS } } },
-		{ $sample: { size: 12 } }
+	const distractors: any[] = await CharacterModel.aggregate([
+		{
+			$match: {
+				_id: { $ne: correct._id },
+				name: { $type: 'string', $regex: REAL_NAME_REGEX }
+			}
+		},
+		{ $sample: { size: 3 } }
 	]);
-	const seen = new Set<string>([correct.name]);
-	const distractorNames: string[] = [];
-	for (const c of pool) {
-		if (isUsable(c.name) && !seen.has(c.name)) {
-			seen.add(c.name);
-			distractorNames.push(c.name);
-			if (distractorNames.length === 3) break;
-		}
-	}
+	const distractorNames = distractors.slice(0, 3).map((d) => d.name);
 	if (distractorNames.length < 3) return null;
 
 	const { options, answerIndex } = buildOptions(correct.name, distractorNames);
@@ -108,29 +108,21 @@ async function makeWhoSaidIt(): Promise<QuizQuestion | null> {
 
 async function makeQuoteMovie(): Promise<QuizQuestion | null> {
 	const quotes: any[] = await QuoteModel.aggregate([
-		{ $match: { dialog: { $exists: true, $ne: '' } } },
+		{ $match: memorableDialogMatch },
 		{ $sample: { size: 1 } },
 		{ $lookup: { from: 'movies', localField: 'movie', foreignField: '_id', as: 'movie' } },
-		{ $unwind: '$movie' }
+		{ $unwind: '$movie' },
+		{ $match: { 'movie.name': { $type: 'string', $ne: '' } } }
 	]);
 	if (!quotes.length) return null;
 	const quote = quotes[0];
 	const correct = quote.movie;
-	if (!isUsable(correct.name)) return null;
 
-	const pool: any[] = await MovieModel.aggregate([
-		{ $match: { _id: { $ne: correct._id }, name: { $exists: true, $ne: '' } } },
-		{ $sample: { size: 12 } }
+	const distractors: any[] = await MovieModel.aggregate([
+		{ $match: { _id: { $ne: correct._id }, name: { $type: 'string', $ne: '' } } },
+		{ $sample: { size: 3 } }
 	]);
-	const seen = new Set<string>([correct.name]);
-	const distractorNames: string[] = [];
-	for (const m of pool) {
-		if (isUsable(m.name) && !seen.has(m.name)) {
-			seen.add(m.name);
-			distractorNames.push(m.name);
-			if (distractorNames.length === 3) break;
-		}
-	}
+	const distractorNames = distractors.slice(0, 3).map((d) => d.name);
 	if (distractorNames.length < 3) return null;
 
 	const { options, answerIndex } = buildOptions(correct.name, distractorNames);
@@ -144,68 +136,12 @@ async function makeQuoteMovie(): Promise<QuizQuestion | null> {
 	};
 }
 
-async function makeCharacterTrait(): Promise<QuizQuestion | null> {
-	const useRealm = Math.random() < 0.5;
-	const field = useRealm ? 'realm' : 'race';
-
-	// Oversample so JS-side filtering on NaN/null values still leaves a candidate.
-	const candidates: any[] = await CharacterModel.aggregate([
-		{
-			$match: {
-				[field]: { $exists: true, $nin: BLANKS },
-				name: { $exists: true, $nin: BLANKS }
-			}
-		},
-		{ $sample: { size: 10 } }
-	]);
-	const character = candidates.find((c) => isUsable(c[field]) && isUsable(c.name));
-	if (!character) return null;
-	const correctTrait: string = character[field];
-
-	// Oversample so de-duping by trait value still leaves us with 3 unique distractors.
-	const pool: any[] = await CharacterModel.aggregate([
-		{
-			$match: {
-				_id: { $ne: character._id },
-				[field]: { $exists: true, $nin: [...BLANKS, correctTrait] }
-			}
-		},
-		{ $sample: { size: 30 } }
-	]);
-	const seen = new Set<string>([correctTrait]);
-	const distractors: string[] = [];
-	for (const c of pool) {
-		const v = c[field];
-		if (isUsable(v) && !seen.has(v)) {
-			seen.add(v);
-			distractors.push(v);
-			if (distractors.length === 3) break;
-		}
-	}
-	if (distractors.length < 3) return null;
-
-	const { options, answerIndex } = buildOptions(correctTrait, distractors);
-	return {
-		id: nanoid(),
-		category: 'character-trait',
-		prompt: `What is ${character.name}'s ${field}?`,
-		options,
-		answerIndex,
-		source: {
-			label: `${character.name} — ${field}: ${correctTrait}`,
-			...(character.wikiUrl ? { wikiUrl: character.wikiUrl } : {})
-		}
-	};
-}
-
 async function makeForCategory(category: Category): Promise<QuizQuestion | null> {
 	switch (category) {
 		case 'who-said-it':
 			return makeWhoSaidIt();
 		case 'quote-movie':
 			return makeQuoteMovie();
-		case 'character-trait':
-			return makeCharacterTrait();
 	}
 }
 
@@ -217,8 +153,7 @@ export const quizController = {
 
 			for (const category of plan) {
 				let q = await makeForCategory(category);
-				// If a less-reliable category came up dry (e.g. very small movie set),
-				// substitute who-said-it so the round still has 10 questions.
+				// Fall back to who-said-it if quote-movie comes up dry (small movie set).
 				if (!q && category !== 'who-said-it') {
 					// eslint-disable-next-line no-console
 					console.warn(`[quiz] category ${category} produced no question; substituting who-said-it`);

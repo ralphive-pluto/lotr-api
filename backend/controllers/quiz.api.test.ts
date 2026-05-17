@@ -79,7 +79,7 @@ describe('quiz controller', () => {
 		expect(Array.isArray(response.body)).toBe(true);
 		expect(response.body).toHaveLength(10);
 
-		const validCategories = new Set(['who-said-it', 'quote-movie', 'character-trait']);
+		const validCategories = new Set(['who-said-it', 'quote-movie']);
 		for (const q of response.body) {
 			expect(typeof q.id).toBe('string');
 			expect(q.id.length).toBeGreaterThan(0);
