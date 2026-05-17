@@ -1,10 +1,11 @@
-import { Router } from 'express';;
+import { Router } from 'express';
 
 import { bookController } from '../controllers/book.api';
 import { chapterController } from '../controllers/chapter.api';
 import { movieController } from '../controllers/movie.api';
 import { characterController } from '../controllers/character.api';
 import { quoteController } from '../controllers/quote.api';
+import { quizController } from '../controllers/quiz.api';
 
 import { errorHandler } from '../middleware/api.errors';
 
@@ -31,6 +32,9 @@ router.route('/character/:id/quote').get([passportHelpers.authenticate, characte
 router.route('/quote').get([passportHelpers.authenticate, quoteController.getQuotes]);
 router.route('/quote/:id').get([passportHelpers.authenticate, quoteController.getQuote]);
 router.route('/quotes/random').get([passportHelpers.authenticate, quoteController.getRandomQuote]);
+
+// Public trivia round — no auth, sits under the global /v2 apiLimiter.
+router.route('/quiz/round').get(quizController.getRound);
 
 router.route('*').get((req, res) => {
 	return pluralEndpointHandler(req, res);
