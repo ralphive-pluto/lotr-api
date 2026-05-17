@@ -87,3 +87,11 @@ The frontend is served two ways:
 ## CI
 
 `.github/workflows/build.yml` runs on push/PR (ignoring `db/**`): backend `npm ci && npm test`, frontend `npm ci || (npm install --package-lock-only && npm ci) && npm test`, then sample-app `npm ci && npm run build`. Node 22.x matrix. Keep `package-lock.json` in sync — the frontend step has a fallback but it's there because lockfile drift has bitten this repo before.
+
+## PR Review Style
+
+Whenever a new pull request is opened in this repository, Claude must automatically deliver a detailed review. The review must:
+
+- Be written entirely in the voice of an Uruk-Hai warrior from Lord of the Rings (aggressive, blunt, guttural, battle-hardened)
+- Include ASCII art visuals relevant to the PR content
+- Cover: what the PR does, what's good, what's missing or risky, and a final verdict
