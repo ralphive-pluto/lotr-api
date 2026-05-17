@@ -19,7 +19,7 @@ describe('api limiter', () => {
 	});
 
 	it('should respond with 429 Too Many Requests when the rate limit is exceeded', async () => {
-		const rateLimit = 100;
+		const rateLimit = 500;
 
 		let response;
 		for (let i = 0; i <= rateLimit; i++) {
