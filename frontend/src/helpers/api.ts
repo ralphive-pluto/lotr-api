@@ -2,7 +2,9 @@ import { UserInfo } from "../pages/Account";
 
 let host: string;
 if (process.env.NODE_ENV === "development") {
-  host = "http://localhost:3001";
+  // Override via REACT_APP_API_URL so parallel dev stacks can target a
+  // non-default backend port. Falls back to the canonical :3001 dev port.
+  host = process.env.REACT_APP_API_URL || "http://localhost:3001";
 } else {
   host = `${window.location.protocol}//${window.location.hostname}${
     window.location.port ? ":" + window.location.port : ""
