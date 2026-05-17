@@ -1,16 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Helmet from "react-helmet";
-import { getQuizRound } from "../helpers/api";
+import { getQuizRound, QuizQuestion } from "../helpers/api";
 import "./Quiz.css";
-
-interface QuizQuestion {
-  id: string;
-  category: "who-said-it" | "quote-movie" | "character-trait";
-  prompt: string;
-  options: string[];
-  answerIndex: number;
-  source: { label: string; wikiUrl?: string };
-}
 
 type Mode = "picker" | "loading" | "playing" | "reveal" | "summary" | "error";
 

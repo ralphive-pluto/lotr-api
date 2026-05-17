@@ -120,7 +120,7 @@ export async function logout(): Promise<
 
 export interface QuizQuestion {
   id: string;
-  category: "who-said-it" | "quote-movie" | "character-trait";
+  category: "who-said-it" | "quote-movie";
   prompt: string;
   options: string[];
   answerIndex: number;
