@@ -5,13 +5,14 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 
 const Routes = [
-  { path: '/', component: Pages.Home },
-  { path: '/documentation', component: Pages.Documentation },
-  { path: '/about', component: Pages.About },
-  { path: '/account', component: Pages.Account },
-  { path: '/sign-up', component: Pages.SignUp },
-  { path: '/login', component: Pages.Login },
-  { path: '', component: Pages.NotFoundPage },
+  { path: "/", component: Pages.Home },
+  { path: "/quiz", component: Pages.Quiz },
+  { path: "/documentation", component: Pages.Documentation },
+  { path: "/about", component: Pages.About },
+  { path: "/account", component: Pages.Account },
+  { path: "/sign-up", component: Pages.SignUp },
+  { path: "/login", component: Pages.Login },
+  { path: "", component: Pages.NotFoundPage },
 ];
 
 interface AppProps {
@@ -36,7 +37,12 @@ const App: React.FC<AppProps> = ({ tab }) => {
               <div className="col-sm-12 col-lg-6">
                 <Switch>
                   {Routes.map((route, i) => (
-                    <Route exact path={route.path} key={i} component={route.component} />
+                    <Route
+                      exact
+                      path={route.path}
+                      key={i}
+                      component={route.component}
+                    />
                   ))}
                 </Switch>
               </div>
@@ -47,6 +53,6 @@ const App: React.FC<AppProps> = ({ tab }) => {
       </div>
     </Router>
   );
-}
+};
 
 export default App;

@@ -1,0 +1,432 @@
+/* ============================================================
+ * Quiz page — parchment & runes theme.
+ * Self-contained: every selector is namespaced under .quiz-*.
+ * No new dependencies; pure CSS animation + inline SVG.
+ * ============================================================ */
+
+.quiz-page {
+  /* Sepia vignette that frames the parchment card. */
+  background: radial-gradient(
+    ellipse at center,
+    rgba(60, 30, 10, 0.04) 0%,
+    rgba(20, 10, 0, 0.18) 60%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+  padding: 1.5rem 0.5rem 2.5rem;
+  border-radius: 6px;
+  min-height: 60vh;
+}
+
+/* --- parchment card ----------------------------------------- */
+
+.quiz-card {
+  position: relative;
+  background:
+		/* warm glow at the top */
+    radial-gradient(ellipse at 50% 0%, #fff4d8 0%, transparent 55%),
+    /* worn parchment base */
+    linear-gradient(180deg, #f3e1b3 0%, #e6c98a 60%, #cca260 100%);
+  border: 1px solid rgba(90, 50, 10, 0.4);
+  box-shadow:
+    inset 0 0 90px rgba(120, 70, 20, 0.28),
+    inset 0 0 20px rgba(50, 25, 5, 0.18),
+    0 14px 40px rgba(0, 0, 0, 0.45);
+  padding: 2.25rem 1.75rem 2rem;
+  color: #3a2410;
+  font-family: "Martel", serif;
+  overflow: hidden;
+}
+
+/* Subtle dark fiber overlay so the gradient doesn't read as plastic. */
+.quiz-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      115deg,
+      rgba(100, 60, 20, 0.05) 0px,
+      rgba(100, 60, 20, 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      -65deg,
+      rgba(70, 35, 10, 0.04) 0px,
+      rgba(70, 35, 10, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.7;
+}
+
+/* Decorative rune flourish strip — pure unicode. */
+.quiz-runes {
+  text-align: center;
+  font-size: 1.1rem;
+  letter-spacing: 1.4rem;
+  color: #6b3410;
+  opacity: 0.6;
+  margin-bottom: 1rem;
+  user-select: none;
+}
+
+/* --- header (title, score, progress) ------------------------ */
+
+.quiz-title {
+  font-family: "Martel", serif;
+  font-size: 2.2rem;
+  line-height: 1.15;
+  margin: 0 0 0.5rem;
+  color: #4a230a;
+  text-align: center;
+}
+
+.quiz-subtitle {
+  text-align: center;
+  font-style: italic;
+  color: #6b3410;
+  margin-bottom: 1.5rem;
+  font-family: "Martel", serif;
+  font-size: 1.05rem;
+}
+
+.quiz-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.quiz-score {
+  font-family: "Martel", serif;
+  font-size: 1rem;
+  color: #4a230a;
+}
+
+.quiz-score strong {
+  color: #8a6418;
+  font-size: 1.3rem;
+}
+
+/* --- One-Ring progress ring --------------------------------- */
+
+.quiz-progress {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.quiz-progress-track {
+  stroke: rgba(90, 50, 10, 0.25);
+  stroke-width: 4;
+  fill: none;
+}
+
+.quiz-progress-fill {
+  stroke: #c79a3a;
+  stroke-width: 4;
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7));
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+
+.quiz-progress-text {
+  font-family: "Martel", serif;
+  font-size: 14px;
+  fill: #4a230a;
+  font-weight: 600;
+}
+
+/* --- prompt ------------------------------------------------- */
+
+.quiz-prompt {
+  font-family: "Martel", serif;
+  font-size: 1.35rem;
+  line-height: 1.5;
+  color: #2e1604;
+  margin: 0.5rem 0 1.5rem;
+  text-align: left;
+}
+
+.quiz-prompt::first-letter {
+  font-size: 3.4em;
+  float: left;
+  line-height: 0.85;
+  padding: 0.1em 0.12em 0 0;
+  color: #7b3410;
+  font-weight: 700;
+  font-family: "Martel", serif;
+}
+
+/* --- answer buttons (scrolls) ------------------------------- */
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.quiz-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1.1rem 0.9rem 2.6rem;
+  background: linear-gradient(180deg, #f8eac2 0%, #e1c281 100%);
+  border: 1px solid #8a6418;
+  border-radius: 4px;
+  color: #2e1604;
+  font-family: "Martel", serif;
+  font-size: 1.05rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 6px rgba(70, 35, 10, 0.25);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.5s ease;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* Wax-seal dot on the left edge */
+.quiz-option::before {
+  content: "";
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #b94a2a, #6e1a0d);
+  box-shadow:
+    0 0 0 1px rgba(40, 10, 5, 0.4),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 200, 180, 0.55);
+  transform: translateY(-50%);
+}
+
+.quiz-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 6px 14px rgba(70, 35, 10, 0.35);
+}
+
+.quiz-option:focus-visible {
+  outline: 2px solid #c79a3a;
+  outline-offset: 2px;
+}
+
+.quiz-option:disabled {
+  cursor: default;
+}
+
+.quiz-option.correct {
+  animation: goldPulse 1.4s ease-in-out infinite;
+  border-color: #c79a3a;
+  background: linear-gradient(180deg, #fff2ba 0%, #e7c66a 100%);
+}
+
+.quiz-option.wrong {
+  filter: grayscale(0.9) brightness(0.65);
+  border-color: #4a3a30;
+  opacity: 0.85;
+}
+
+.quiz-option.reveal-correct:not(.correct) {
+  /* When a wrong choice was made, still highlight the actual answer faintly */
+  box-shadow:
+    inset 0 0 0 2px rgba(199, 154, 58, 0.7),
+    0 2px 8px rgba(199, 154, 58, 0.35);
+}
+
+@keyframes goldPulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 0 rgba(212, 175, 55, 0.55);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 28px 8px rgba(212, 175, 55, 0.85);
+  }
+}
+
+/* --- reveal sub-card ---------------------------------------- */
+
+.quiz-reveal {
+  margin-top: 1.5rem;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 245, 220, 0.55);
+  border-left: 4px solid #c79a3a;
+  border-radius: 3px;
+  color: #2e1604;
+  font-family: "Martel", serif;
+  animation: fadeIn 0.35s ease-out;
+}
+
+.quiz-reveal-heading {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.quiz-reveal-heading.correct {
+  color: #6c4f10;
+}
+
+.quiz-reveal-heading.wrong {
+  color: #7a2418;
+}
+
+.quiz-reveal-body {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #3a2410;
+}
+
+.quiz-reveal-body a {
+  color: #7b3410 !important;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- CTA buttons -------------------------------------------- */
+
+.quiz-cta {
+  display: inline-block;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.6rem;
+  font-family: "Martel", serif;
+  font-size: 1.15rem;
+  color: #fff !important;
+  background: linear-gradient(180deg, #6b3410 0%, #3a1c08 100%);
+  border: 1px solid #2e1604;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.25),
+    0 4px 10px rgba(40, 20, 5, 0.4);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.quiz-cta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.35),
+    0 8px 18px rgba(40, 20, 5, 0.5);
+}
+
+.quiz-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.quiz-cta-row {
+  text-align: center;
+}
+
+/* --- summary card ------------------------------------------- */
+
+.quiz-summary {
+  text-align: center;
+  padding: 1rem 0 0.5rem;
+}
+
+.quiz-summary-score {
+  font-family: "Martel", serif;
+  font-size: 4.5rem;
+  line-height: 1;
+  color: #6c4f10;
+  margin: 0.5rem 0;
+}
+
+.quiz-summary-score span {
+  color: #7b3410;
+  font-size: 2.5rem;
+}
+
+.quiz-summary-label {
+  font-size: 1.2rem;
+  color: #4a230a;
+  margin-bottom: 1rem;
+}
+
+.quiz-best-banner {
+  display: inline-block;
+  margin: 1rem auto;
+  padding: 0.5rem 1.2rem;
+  background: linear-gradient(180deg, #ffe188 0%, #c79a3a 100%);
+  color: #2e1604;
+  border-radius: 4px;
+  font-weight: 600;
+  font-family: "Martel", serif;
+  font-size: 1rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 4px 10px rgba(120, 70, 20, 0.4);
+  animation: goldPulse 2s ease-in-out infinite;
+}
+
+/* --- loading / error states --------------------------------- */
+
+.quiz-status {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #4a230a;
+  font-family: "Martel", serif;
+  font-size: 1.1rem;
+}
+
+.quiz-error {
+  color: #7a2418;
+  font-style: italic;
+}
+
+/* --- small-screen tightening -------------------------------- */
+
+@media screen and (max-width: 576px) {
+  .quiz-card {
+    padding: 1.5rem 1rem 1.25rem;
+  }
+
+  .quiz-title {
+    font-size: 1.7rem;
+  }
+
+  .quiz-prompt {
+    font-size: 1.15rem;
+  }
+
+  .quiz-summary-score {
+    font-size: 3.2rem;
+  }
+
+  .quiz-option {
+    font-size: 1rem;
+    padding: 0.8rem 0.9rem 0.8rem 2.4rem;
+  }
+}

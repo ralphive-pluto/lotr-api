@@ -18,7 +18,7 @@ interface RequestOptions {
 }
 
 export async function login(
-  values: Record<string, string>
+  values: Record<string, string>,
 ): Promise<Record<string, string | boolean>> {
   const requestOptions: RequestOptions = {
     method: "POST",
@@ -51,7 +51,7 @@ export async function login(
 }
 
 export async function register(
-  values: Record<string, string>
+  values: Record<string, string>,
 ): Promise<Record<string, string | boolean>> {
   const requestOptions: RequestOptions = {
     method: "POST",
@@ -114,6 +114,34 @@ export async function logout(): Promise<
       message: "Something went wrong.",
     };
   }
+}
+
+export interface QuizQuestion {
+  id: string;
+  category: "who-said-it" | "quote-movie" | "character-trait";
+  prompt: string;
+  options: string[];
+  answerIndex: number;
+  source: { label: string; wikiUrl?: string };
+}
+
+export async function getQuizRound(): Promise<QuizQuestion[]> {
+  const requestOptions: RequestOptions = {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  };
+  const response = await fetch(`${host}/v2/quiz/round`, requestOptions);
+  if (response.status > 399) {
+    throw new Error(`Quiz endpoint returned ${response.status}`);
+  }
+  const json = await response.json();
+  if (!Array.isArray(json)) {
+    throw new Error("Quiz endpoint returned unexpected payload");
+  }
+  return json as QuizQuestion[];
 }
 
 export async function getUserInfo(): Promise<UserInfo | null> {
