@@ -59,6 +59,13 @@ const Quiz: React.FC = () => {
     if (!Number.isNaN(stored)) setBestScore(stored);
   }, []);
 
+  // Mark the body while this page is mounted so Quiz.css can slim the
+  // shared page-level <h1> and stretch the App.tsx column wrapper.
+  useEffect(() => {
+    document.body.classList.add("quiz-route");
+    return () => document.body.classList.remove("quiz-route");
+  }, []);
+
   const startRound = useCallback(async () => {
     setMode("loading");
     setError(null);
@@ -119,7 +126,6 @@ const Quiz: React.FC = () => {
 
         {mode === "picker" && (
           <>
-            <h2 className="quiz-title">The Trial of Lore</h2>
             <p className="quiz-subtitle">
               Ten questions on the deeds, words, and folk of Middle-earth.
             </p>
