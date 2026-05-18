@@ -13,6 +13,7 @@ type Message = Renderable | ValueFunction<Renderable, Toast>;
 
 const Headers: Record<string, string> = {
   "/": "The One API",
+  "/quiz": "Trial of Lore",
   "/sign-up": "Sign up",
   "/about": "About",
   "/documentation": "Documentation",
@@ -74,6 +75,8 @@ const Header: React.FC = () => {
         <label htmlFor="drawer-control" className="drawer-close" />
         <nav>
           <Link to="/">home</Link>
+          <br />
+          <Link to="/quiz">quiz</Link>
           <br />
           <Link to="/about">about</Link>
           <br />

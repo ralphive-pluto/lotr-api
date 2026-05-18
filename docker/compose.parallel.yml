@@ -1,0 +1,43 @@
+# Parallel dev stack for this worktree's feature/quiz-game build.
+# Coexists with the main-repo stack (named "lotr") on ports 3000/3001/27017
+# by remapping host ports and using a distinct compose project name.
+#
+# Usage from this worktree:
+#   docker compose -p lotr-quiz -f docker/compose.parallel.yml up -d --build
+#   docker compose -p lotr-quiz -f docker/compose.parallel.yml down
+name: lotr-quiz
+
+services:
+  mongo:
+    build:
+      context: ../db
+    environment:
+      MONGO_INITDB_DATABASE: lotr
+    ports:
+      - "27018:27017"
+    restart: on-failure
+    volumes:
+      - ${PWD}/../db:/data
+
+  backend:
+    build: ../backend
+    depends_on:
+      - mongo
+    environment:
+      DATABASE_URL: "mongodb://mongo:27017/lotr"
+    volumes:
+      - ${PWD}/../backend:/backend
+    ports:
+      - "3011:3001"
+
+  frontend:
+    build: ../frontend
+    depends_on:
+      - mongo
+    environment:
+      # Point the in-browser API client at this stack's backend port.
+      REACT_APP_API_URL: "http://localhost:3011"
+    volumes:
+      - ${PWD}/../frontend:/frontend
+    ports:
+      - "3010:3000"

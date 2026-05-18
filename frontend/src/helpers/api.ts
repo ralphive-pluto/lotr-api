@@ -2,7 +2,9 @@ import { UserInfo } from "../pages/Account";
 
 let host: string;
 if (process.env.NODE_ENV === "development") {
-  host = "http://localhost:3001";
+  // Override via REACT_APP_API_URL so parallel dev stacks can target a
+  // non-default backend port. Falls back to the canonical :3001 dev port.
+  host = process.env.REACT_APP_API_URL || "http://localhost:3001";
 } else {
   host = `${window.location.protocol}//${window.location.hostname}${
     window.location.port ? ":" + window.location.port : ""
@@ -18,7 +20,7 @@ interface RequestOptions {
 }
 
 export async function login(
-  values: Record<string, string>
+  values: Record<string, string>,
 ): Promise<Record<string, string | boolean>> {
   const requestOptions: RequestOptions = {
     method: "POST",
@@ -51,7 +53,7 @@ export async function login(
 }
 
 export async function register(
-  values: Record<string, string>
+  values: Record<string, string>,
 ): Promise<Record<string, string | boolean>> {
   const requestOptions: RequestOptions = {
     method: "POST",
@@ -114,6 +116,34 @@ export async function logout(): Promise<
       message: "Something went wrong.",
     };
   }
+}
+
+export interface QuizQuestion {
+  id: string;
+  category: "who-said-it" | "quote-movie";
+  prompt: string;
+  options: string[];
+  answerIndex: number;
+  source: { label: string; wikiUrl?: string };
+}
+
+export async function getQuizRound(): Promise<QuizQuestion[]> {
+  const requestOptions: RequestOptions = {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  };
+  const response = await fetch(`${host}/v2/quiz/round`, requestOptions);
+  if (response.status > 399) {
+    throw new Error(`Quiz endpoint returned ${response.status}`);
+  }
+  const json = await response.json();
+  if (!Array.isArray(json)) {
+    throw new Error("Quiz endpoint returned unexpected payload");
+  }
+  return json as QuizQuestion[];
 }
 
 export async function getUserInfo(): Promise<UserInfo | null> {

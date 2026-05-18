@@ -1,0 +1,457 @@
+/* ============================================================
+ * Quiz page — parchment & runes theme.
+ *
+ * Most selectors are namespaced under .quiz-*. The exceptions are
+ * the body.quiz-route overrides for the shared page <h1> and the
+ * App.tsx column wrapper: they let the quiz page slim the dark
+ * header strip and break out of the 50% col-lg-6 on desktop so
+ * the parchment dominates the viewport instead of feeling like a
+ * lonely card stranded in whitespace.
+ *
+ * No new dependencies; pure CSS animations + inline SVG.
+ * ============================================================ */
+
+/* --- page-shell overrides (only active when /quiz is mounted) -- */
+
+/* The shared App.tsx wrapper renders every page inside a centered
+ * .col-sm-12.col-lg-6, which on large screens leaves the parchment
+ * card stranded in the middle of a big empty row. For the quiz we
+ * stretch the inner column to feel like a stage, not a sidebar. */
+body.quiz-route .col-sm-12.col-lg-6 {
+  max-width: min(960px, 92vw);
+  flex-basis: min(960px, 92vw);
+}
+
+/* The page-level <h1> in Header.tsx has a 5rem top margin and a
+ * 40-70px font-size from index.css. On the quiz route that wastes
+ * the upper third of the viewport and duplicates the card title.
+ * Slim it down so the parchment sits closer to the dark band. */
+body.quiz-route header h1 {
+  margin-top: 1.25rem !important;
+  font-size: 36px !important;
+  line-height: 1 !important;
+}
+
+@media screen and (min-width: 576px) {
+  body.quiz-route header h1 {
+    font-size: 52px !important;
+  }
+}
+
+/* --- quiz container ---------------------------------------- */
+
+.quiz-page {
+  padding: 0.25rem 0 1.5rem;
+}
+
+/* --- parchment card ---------------------------------------- */
+
+.quiz-card {
+  position: relative;
+  background:
+		/* warm glow at the top */
+    radial-gradient(ellipse at 50% 0%, #fff4d8 0%, transparent 55%),
+    /* worn parchment base */
+    linear-gradient(180deg, #f3e1b3 0%, #e6c98a 60%, #cca260 100%);
+  border: 1px solid rgba(90, 50, 10, 0.4);
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 70px rgba(120, 70, 20, 0.25),
+    inset 0 0 14px rgba(50, 25, 5, 0.15),
+    0 16px 40px rgba(0, 0, 0, 0.4);
+  padding: 1.5rem 1.75rem 1.25rem;
+  color: #3a2410;
+  font-family: "Martel", serif;
+  overflow: hidden;
+}
+
+/* Subtle dark fibre overlay so the gradient doesn't read as plastic. */
+.quiz-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      115deg,
+      rgba(100, 60, 20, 0.05) 0px,
+      rgba(100, 60, 20, 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    repeating-linear-gradient(
+      -65deg,
+      rgba(70, 35, 10, 0.04) 0px,
+      rgba(70, 35, 10, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    );
+  mix-blend-mode: multiply;
+  opacity: 0.6;
+}
+
+/* Decorative rune flourish strip — pure unicode. */
+.quiz-runes {
+  text-align: center;
+  font-size: 0.95rem;
+  letter-spacing: 1.1rem;
+  color: #6b3410;
+  opacity: 0.55;
+  margin: 0 0 0.75rem;
+  text-indent: 1.1rem; /* compensate for letter-spacing pushing the line right */
+  user-select: none;
+}
+
+/* --- header (score, progress) ------------------------------ */
+
+.quiz-subtitle {
+  text-align: center;
+  font-style: italic;
+  color: #6b3410;
+  margin: 0 0 1.1rem;
+  font-family: "Martel", serif;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.quiz-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 1rem;
+}
+
+.quiz-score {
+  font-family: "Martel", serif;
+  font-size: 0.95rem;
+  color: #4a230a;
+}
+
+.quiz-score strong {
+  color: #8a6418;
+  font-size: 1.25rem;
+}
+
+/* --- One-Ring progress ring -------------------------------- */
+
+.quiz-progress {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+}
+
+.quiz-progress-track {
+  stroke: rgba(90, 50, 10, 0.25);
+  stroke-width: 4;
+  fill: none;
+}
+
+.quiz-progress-fill {
+  stroke: #c79a3a;
+  stroke-width: 4;
+  fill: none;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(212, 175, 55, 0.7));
+  transition: stroke-dashoffset 0.5s ease-out;
+}
+
+.quiz-progress-text {
+  font-family: "Martel", serif;
+  font-size: 13px;
+  fill: #4a230a;
+  font-weight: 600;
+}
+
+/* --- prompt ------------------------------------------------ */
+
+.quiz-prompt {
+  font-family: "Martel", serif;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: #2e1604;
+  margin: 0.25rem 0 1rem;
+  text-align: left;
+}
+
+.quiz-prompt::first-letter {
+  font-size: 3em;
+  float: left;
+  line-height: 0.85;
+  padding: 0.05em 0.1em 0 0;
+  color: #7b3410;
+  font-weight: 700;
+  font-family: "Martel", serif;
+}
+
+/* --- answer buttons (scrolls) ------------------------------ */
+
+/* 1 column on phones, 2 columns from tablet up so the wider
+ * desktop layout doesn't leave half the card empty. */
+.quiz-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+@media screen and (min-width: 600px) {
+  .quiz-options {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.quiz-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 1rem 0.7rem 2.3rem;
+  background: linear-gradient(180deg, #f8eac2 0%, #e1c281 100%);
+  border: 1px solid #8a6418;
+  border-radius: 3px;
+  color: #2e1604;
+  font-family: "Martel", serif;
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 6px rgba(70, 35, 10, 0.25);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.5s ease;
+  overflow: hidden;
+  width: 100%;
+  min-height: 2.6rem;
+}
+
+/* Wax-seal dot on the left edge */
+.quiz-option::before {
+  content: "";
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #b94a2a, #6e1a0d);
+  box-shadow:
+    0 0 0 1px rgba(40, 10, 5, 0.4),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.45),
+    inset 0 1px 1px rgba(255, 200, 180, 0.55);
+  transform: translateY(-50%);
+}
+
+.quiz-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 6px 14px rgba(70, 35, 10, 0.35);
+}
+
+.quiz-option:focus-visible {
+  outline: 2px solid #c79a3a;
+  outline-offset: 2px;
+}
+
+.quiz-option:disabled {
+  cursor: default;
+}
+
+.quiz-option.correct {
+  animation: goldPulse 1.4s ease-in-out infinite;
+  border-color: #c79a3a;
+  background: linear-gradient(180deg, #fff2ba 0%, #e7c66a 100%);
+}
+
+.quiz-option.wrong {
+  filter: grayscale(0.9) brightness(0.65);
+  border-color: #4a3a30;
+  opacity: 0.85;
+}
+
+.quiz-option.reveal-correct:not(.correct) {
+  box-shadow:
+    inset 0 0 0 2px rgba(199, 154, 58, 0.7),
+    0 2px 8px rgba(199, 154, 58, 0.35);
+}
+
+@keyframes goldPulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 0 0 rgba(212, 175, 55, 0.55);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 24px 6px rgba(212, 175, 55, 0.85);
+  }
+}
+
+/* --- reveal sub-card --------------------------------------- */
+
+.quiz-reveal {
+  margin-top: 1rem;
+  padding: 0.8rem 1rem;
+  background: rgba(255, 245, 220, 0.55);
+  border-left: 4px solid #c79a3a;
+  border-radius: 2px;
+  color: #2e1604;
+  font-family: "Martel", serif;
+  animation: fadeIn 0.35s ease-out;
+}
+
+.quiz-reveal-heading {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.quiz-reveal-heading.correct {
+  color: #6c4f10;
+}
+
+.quiz-reveal-heading.wrong {
+  color: #7a2418;
+}
+
+.quiz-reveal-body {
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #3a2410;
+}
+
+.quiz-reveal-body a {
+  color: #7b3410 !important;
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- CTA buttons ------------------------------------------- */
+
+.quiz-cta {
+  display: inline-block;
+  margin-top: 0.9rem;
+  padding: 0.65rem 1.4rem;
+  font-family: "Martel", serif;
+  font-size: 1.05rem;
+  color: #fff !important;
+  background: linear-gradient(180deg, #6b3410 0%, #3a1c08 100%);
+  border: 1px solid #2e1604;
+  border-radius: 3px;
+  cursor: pointer;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.25),
+    0 4px 10px rgba(40, 20, 5, 0.4);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.quiz-cta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 220, 180, 0.35),
+    0 8px 18px rgba(40, 20, 5, 0.5);
+}
+
+.quiz-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.quiz-cta-row {
+  text-align: center;
+}
+
+/* --- summary card ------------------------------------------ */
+
+.quiz-summary {
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.quiz-summary-score {
+  font-family: "Martel", serif;
+  font-size: 3.8rem;
+  line-height: 1;
+  color: #6c4f10;
+  margin: 0.25rem 0 0.5rem;
+}
+
+.quiz-summary-score span {
+  color: #7b3410;
+  font-size: 2rem;
+}
+
+.quiz-summary-label {
+  font-size: 1.05rem;
+  color: #4a230a;
+  margin-bottom: 0.5rem;
+}
+
+.quiz-best-banner {
+  display: inline-block;
+  margin: 0.5rem auto;
+  padding: 0.4rem 1rem;
+  background: linear-gradient(180deg, #ffe188 0%, #c79a3a 100%);
+  color: #2e1604;
+  border-radius: 3px;
+  font-weight: 600;
+  font-family: "Martel", serif;
+  font-size: 0.95rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 4px 10px rgba(120, 70, 20, 0.4);
+  animation: goldPulse 2s ease-in-out infinite;
+}
+
+/* --- loading / error states -------------------------------- */
+
+.quiz-status {
+  text-align: center;
+  padding: 1.5rem 1rem;
+  color: #4a230a;
+  font-family: "Martel", serif;
+  font-size: 1.05rem;
+}
+
+.quiz-error {
+  color: #7a2418;
+  font-style: italic;
+}
+
+/* --- mobile fine-tune -------------------------------------- */
+
+@media screen and (max-width: 576px) {
+  .quiz-card {
+    padding: 1.1rem 1rem 1rem;
+  }
+
+  .quiz-prompt {
+    font-size: 1.05rem;
+  }
+
+  .quiz-summary-score {
+    font-size: 2.8rem;
+  }
+
+  .quiz-option {
+    font-size: 0.95rem;
+    padding: 0.65rem 0.85rem 0.65rem 2.2rem;
+  }
+}
